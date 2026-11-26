@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>絵装まとめて採点 Ver.5</title>
+<title>絵装まとめて採点 Ver.6</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1018;--panel:#172131;--line:#34445b;--muted:#adbacb;--text:#f4f6fa;--blue:#a3caff;--green:#80e0b0}
 *{box-sizing:border-box}body{margin:0;padding:18px 12px 45px;background:linear-gradient(145deg,#1b293d,#090d14 65%);color:var(--text);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
@@ -21,7 +21,7 @@ pre{white-space:pre-wrap;max-height:150px;overflow:auto;background:#0d1521;paddi
 @media(max-width:520px){.head h1{font-size:24px}.card{padding:13px}.sum strong{font-size:32px}}
 </style></head>
 <body><main>
-<header class="head"><small>OUTRANK / EQUIPMENT SCORER</small><h1>絵装まとめて採点 <span style="font-size:14px;color:#a3caff">Ver.5</span></h1><div class="muted">画像を選ぶだけで1枚表示・4枚ドロップ表示を自動判定。金色レアリティだけ採点します。</div></header>
+<header class="head"><small>OUTRANK / EQUIPMENT SCORER</small><h1>絵装まとめて採点 <span style="font-size:14px;color:#a3caff">Ver.6</span></h1><div class="muted">画像を選ぶだけで1枚表示・4枚ドロップ表示を自動判定。金色レアリティだけ採点します。</div></header>
 <section class="card">
 <h2>① スクリーンショットを選択</h2>
 <label class="picker">画像ファイルを選択<input id="file" type="file" accept="image/*"></label>
@@ -31,7 +31,7 @@ pre{white-space:pre-wrap;max-height:150px;overflow:auto;background:#0d1521;paddi
 <details><summary class="muted">OCR読み取り結果</summary><pre id="raw">まだ解析していません。</pre></details>
 </section>
 <section class="card"><h2>② 採点結果</h2><div class="sum"><div class="muted">金色レアリティの合計点</div><div><strong id="sum">0</strong><small> / 44点</small></div></div><div id="results"><p class="muted">画像を選択して解析してください。</p></div></section>
-<section class="card"><h2>判定ルール</h2><div class="muted">1枚の装備詳細画面、または4枚のドロップ画面をOCRで判別します。セット名から2セット効果を判定し、各装備を11点満点で採点。4枚表示では金色4枚なら最大44点です。紫色レアリティは採点対象外です。</div><div class="hint">セット対応：灼炎・水御・湧雷・氷霜・破竜＝属性ダメージ／共鳴・武技＝会心率／導き・恩恵・守護＝奥義チャージ／猛力＝物理ダメージ</div></section>
+<section class="card"><h2>判定ルール</h2><div class="muted">カード枠の色と位置で画面を判別します。未検出・基準未登録の項目は採点保留になります。セット名から2セット効果を判定し、各装備を11点満点で採点。4枚表示では金色4枚なら最大44点です。紫色レアリティは採点対象外です。</div><div class="hint">セット対応：灼炎・水御・湧雷・氷霜・破竜＝属性ダメージ／共鳴・武技＝会心率／導き・恩恵・守護＝奥義チャージ／猛力＝物理ダメージ</div></section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
@@ -54,24 +54,12 @@ function parseSet(t){for(const s of Object.keys(sets))if(t.includes(s))return s;
 function parseStats(t){const out=[];const re=/(奥義チャージ(?:効率)?|会心率|属性ダメージ)\s*[+＋]?\s*([0-9]+(?:[.,][0-9]+)?)\s*%/g;let m;while((m=re.exec(t))!==null){out.push({effect:m[1].startsWith('奥義')?'奥義チャージ':m[1],value:m[2].replace(',','.')})}return out.slice(0,2)}
 function parseCost(t){let m=t.match(/コスト\s*[:：]?\s*([134])/);if(m)return m[1];m=t.match(/(?:^|\n)\s*([134])\s*(?:LV|レベル)/i);return m?m[1]:''}
 function makeCanvas(img){const c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);return c}
-function cropDrop(src,i){
- // The four reward cards occupy roughly the central 62% of the drop-screen screenshot.
- const c=document.createElement('canvas'),ctx=c.getContext('2d');
- const x0=src.width*.185, x1=src.width*.815, y0=src.height*.17, y1=src.height*.83;
- const sw=(x1-x0)/4;c.width=Math.round(sw);c.height=Math.round(y1-y0);
- ctx.drawImage(src,Math.round(x0+i*sw),Math.round(y0),Math.ceil(sw),Math.round(y1-y0),0,0,c.width,c.height);return c;
-}
-function getRarity(c){
- // Compare purple-violet vs golden-yellow pixels in saturated border areas.
- const ctx=c.getContext('2d'),w=c.width,h=c.height,d=ctx.getImageData(0,0,w,h).data;let gold=0,purple=0;
- for(let y=Math.floor(h*.08);y<h*.94;y+=Math.max(2,Math.floor(h/90))){
-  for(const fx of [.018,.035,.965,.982]){const x=Math.min(w-1,Math.floor(w*fx)),k=(y*w+x)*4,r=d[k],g=d[k+1],b=d[k+2];
-   if(r>115&&g>75&&r>g*1.12&&g>b*1.1)gold++;
-   if(r>90&&b>95&&b>g*1.12&&r>b*.75)purple++;
-  }
- }
- return purple>gold?'purple':'gold';
-}
+function crop(src,x,y,w,h,scale=1){const c=document.createElement('canvas');c.width=Math.round(src.width*w*scale);c.height=Math.round(src.height*h*scale);c.getContext('2d').drawImage(src,src.width*x,src.height*y,src.width*w,src.height*h,0,0,c.width,c.height);return c}
+const dropBoxes=Array.from({length:4},(_,i)=>[.1995+i*.1537,.29,.139,.422]);
+const detailBox=[.422,.229,.174,.525];
+function borderInfo(src,box){const c=crop(src,...box),w=c.width,h=c.height,d=c.getContext('2d').getImageData(0,0,w,h).data;let gold=0,purple=0,n=0;for(let y=8;y<h-5;y+=2){for(let x of [1,2,3,w-4,w-3,w-2]){let k=(y*w+x)*4,r=d[k],g=d[k+1],b=d[k+2];n++;if(r>130&&g>85&&r>b*1.35&&g>b*1.15)gold++;if(r>85&&b>85&&b>g*1.07&&r>g*1.05)purple++;}}return {strength:(gold+purple)/n,rarity:gold+purple<n*.12?'unknown':purple>gold?'purple':'gold'};}
+function autoLayout(src){const d=dropBoxes.map(b=>borderInfo(src,b));const one=borderInfo(src,detailBox);return d.filter(v=>v.strength>.18).length>=3?{boxes:dropBoxes,info:d,label:'4枚ドロップ画面'}:one.strength>.18?{boxes:[detailBox],info:[one],label:'1枚詳細画面'}:null;}
+function normalize(t){return t.normalize('NFKC').replace(/[ \t]/g,'').replace(/灼炎|灼焔/g,'灼炎').replace(/絵装の灼炎/g,'絵装の灼炎');}
 async function loadOCR(){
  if(window.Tesseract && window.Tesseract.createWorker)return;
  const urls=[
@@ -91,61 +79,37 @@ async function loadOCR(){
  }
  throw lastError || new Error('OCRライブラリが利用できません。');
 }
-function autoLayout(text,img){
- // A four-card reward screenshot contains repeated equipment names or many stat labels.
- const nameCount=(text.match(/絵装\s*[・･]/g)||[]).length;
- const statCount=(text.match(/奥義チャージ|会心率|属性ダメージ/g)||[]).length;
- // Landscape reward screenshots with several card labels are treated as four-up; detail pages have a single main card.
- return nameCount>=3||statCount>=6;
-}
-function addRecord(text,canvas,rarityOverride){
- const stats=parseStats(text),set=parseSet(text),cost=parseCost(text),rarity=rarityOverride||getRarity(canvas);
- return {text,set,cost,stats,rarity,active:rarity==='gold'};
-}
 $('run').addEventListener('click',async()=>{
- if(!selectedFile)return;$('run').disabled=true;$('status').textContent='画像を開いています…';
- try{
- const img=new Image(),url=URL.createObjectURL(selectedFile);img.src=url;
- await new Promise((res,rej)=>{img.onload=res;img.onerror=rej});
- const full=makeCanvas(img);$('status').textContent='OCRエンジンを準備しています…';await loadOCR();
- const worker=await Tesseract.createWorker('jpn+eng',1,{logger:m=>{
-  if(m.status==='loading language traineddata')$('status').textContent='日本語OCRデータをダウンロード中…';
-  else if(m.status==='recognizing text')$('status').textContent='文字を読み取り中… '+Math.round(m.progress*100)+'%';
- }});
- // First OCR the whole screenshot to decide whether it is one detailed card or four reward cards.
- const fullResult=await worker.recognize(full),fullText=fullResult.data.text||'';
- const isFour=autoLayout(fullText,img);items=[];
- if(isFour){
-  for(let i=0;i<4;i++){ $('status').textContent=`4枚表示を検出：${i+1}/4枚目を解析中…`;const crop=cropDrop(full,i);const rr=await worker.recognize(crop);items.push(addRecord(rr.data.text||'',crop));}
- }else{
-  $('status').textContent='詳細画面（1枚）を検出しました…';items.push(addRecord(fullText,full));
- }
- await worker.terminate();URL.revokeObjectURL(url);
- $('raw').textContent=`自動判定：${isFour?'4枚ドロップ画面':'1枚詳細画面'}\n\n`+items.map((x,i)=>`【${i+1}枚目 / ${x.rarity==='gold'?'金色':'紫色'}】\n${x.text}`).join('\n\n');
- render();$('status').textContent=`${isFour?'4枚':'1枚'}の画像として判定しました。読み取り結果を確認してください。`;
- }catch(e){$('status').textContent='画像を読み込めない、またはOCRを起動できませんでした。Safariでページを開き直し、画像ファイルを選び直してください。詳細：'+(e.message||e)}
- $('run').disabled=false;$('run').textContent='画像を解析して自動採点';
+ if(!selectedFile)return;$('run').disabled=true;let worker,url;items=[];render();
+ try{const img=new Image();url=URL.createObjectURL(selectedFile);await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});const full=makeCanvas(img),layout=autoLayout(full);if(!layout)throw Error('カード枠を検出できません。ゲーム画面全体の画像を選択してください。');
+ $('status').textContent=layout.label+'を検出。OCR準備中…';await loadOCR();worker=await Tesseract.createWorker('jpn+eng',1);
+ for(let i=0;i<layout.boxes.length;i++){const card=crop(full,...layout.boxes[i]);const rarity=layout.info[i].rarity;const r={rarity,active:rarity==='gold',set:'',cost:'',stats:[],text:'',preview:card.toDataURL('image/jpeg',.8)};items.push(r);if(rarity!=='gold')continue;
+ $('status').textContent=layout.label+'：'+(i+1)+'枚目を解析中…';
+ const bottom=crop(card,.035,.755,.93,.225,3);await worker.setParameters({tessedit_pageseg_mode:'6'});const t=normalize((await worker.recognize(bottom)).data.text||'');r.text=t;r.set=parseSet(t);r.stats=parseStats(t);
+ const cost=crop(card,.012,.135,.12,.10,5);await worker.setParameters({tessedit_pageseg_mode:'10',tessedit_char_whitelist:'134'});const ct=(await worker.recognize(cost)).data.text.trim();r.cost=/^[134]$/.test(ct)?ct:'';await worker.setParameters({tessedit_char_whitelist:''});r.text+='\nコストOCR: '+ct;render();}
+ $('raw').textContent=layout.label+'\n'+items.map(x=>x.text).join('\n\n');render();$('status').textContent=layout.label+'：解析完了。未検出項目は手動で修正してください。';
+ }catch(e){$('status').textContent='解析エラー：'+(e.message||e);render();}finally{if(worker)await worker.terminate().catch(()=>{});if(url)URL.revokeObjectURL(url);$('run').disabled=false;}
 });
 function render(){
  const root=$('results');root.innerHTML='';let total=0,eligible=0;
  items.forEach((r,i)=>{
-  const setInfo=sets[r.set]||null,p=r.stats.map(s=>score(r.cost,s.effect,s.value)),stat=p.reduce((a,b)=>a+b,0),same=r.stats.length>=2&&r.stats[0].effect===r.stats[1].effect?1:0,setPts=setInfo?r.stats.filter(s=>s.effect===setInfo.type).length:0,points=stat+same+setPts;
-  if(r.active&&r.rarity==='gold'){total+=points;eligible++}
+  const complete=!!r.set&&r.stats.length===2&&r.stats.every(s=>s.effect&&s.value!==''&&Number.isFinite(Number(s.value))&&rules[r.cost+'|'+s.effect]); const setInfo=sets[r.set]||null,p=r.stats.map(s=>score(r.cost,s.effect,s.value)),stat=p.reduce((a,b)=>a+b,0),same=r.stats.length>=2&&r.stats[0].effect&&r.stats[0].effect===r.stats[1].effect?1:0,setPts=setInfo?r.stats.filter(s=>s.effect===setInfo.type).length:0,points=stat+same+setPts;
+  if(complete&&r.active&&r.rarity==='gold'){total+=points;eligible++}
   const d=document.createElement('div');d.className='equip';
-  d.innerHTML=`<div class="equiphead"><b>装備 ${i+1}</b><span class="tag ${r.rarity}">${r.rarity==='gold'?'金色':'紫色（対象外）'}</span></div>
-  <div class="grid"><div class="field"><label>レアリティ</label><select data-i="${i}" data-k="rarity"><option value="gold" ${r.rarity==='gold'?'selected':''}>金色</option><option value="purple" ${r.rarity==='purple'?'selected':''}>紫色</option></select></div>
+  d.innerHTML=`<div class="equiphead"><b>装備 ${i+1}</b><span class="tag ${r.rarity}">${r.rarity==='gold'?'金色':r.rarity==='purple'?'紫色（対象外）':'未判定'}</span></div>
+  ${r.preview?`<img src="${r.preview}" style="max-height:150px;max-width:100%;display:block;margin:0 auto 10px">`:``}<div class="grid"><div class="field"><label>レアリティ</label><select data-i="${i}" data-k="rarity"><option value="unknown" ${r.rarity==='unknown'?'selected':''}>未判定</option><option value="gold" ${r.rarity==='gold'?'selected':''}>金色</option><option value="purple" ${r.rarity==='purple'?'selected':''}>紫色</option></select></div>
   <div class="field"><label>採点</label><select data-i="${i}" data-k="active"><option value="yes" ${r.active?'selected':''}>採点する</option><option value="no" ${!r.active?'selected':''}>除外する</option></select></div>
   <div class="field"><label>セット名</label><select data-i="${i}" data-k="set"><option value="">未検出</option>${Object.keys(sets).map(s=>`<option value="${s}" ${r.set===s?'selected':''}>${s}</option>`).join('')}</select></div>
   <div class="field"><label>コスト</label><select data-i="${i}" data-k="cost"><option value="">未検出</option>${[1,3,4].map(n=>`<option value="${n}" ${r.cost===String(n)?'selected':''}>${n}</option>`).join('')}</select></div></div>
   ${[0,1].map(j=>{const s=r.stats[j]||{effect:'',value:''};return `<div class="grid" style="margin-top:9px"><div class="field"><label>効果 ${j+1}</label><select data-i="${i}" data-j="${j}" data-k="effect"><option value="">未検出</option>${effects.map(e=>`<option ${s.effect===e?'selected':''}>${e}</option>`).join('')}</select></div><div class="field"><label>数値</label><input type="number" step=".01" value="${s.value||''}" placeholder="例 0.91" data-i="${i}" data-j="${j}" data-k="value"></div></div>`}).join('')}
   <div class="line" style="margin-top:10px"><span>ステータス点</span><b>${stat}/8</b></div><div class="line"><span>効果一致</span><b>${same}/1</b></div><div class="line"><span>セット一致${setInfo?'（'+setInfo.type+'）':''}</span><b>${setPts}/2</b></div>
-  <div class="equiphead" style="margin-top:10px"><span class="muted">装備得点</span><span class="score">${r.rarity==='gold'&&r.active?points+'/11':'対象外'}</span></div>`;
+  <div class="equiphead" style="margin-top:10px"><span class="muted">装備得点</span><span class="score">${r.rarity==='gold'&&r.active?(complete?points+'/11':'要確認'):'対象外'}</span></div>`;
   root.appendChild(d);
  });
  $('sum').textContent=total;$('sum').nextElementSibling.textContent=` / ${eligible*11}点（${eligible}枚採点）`;
  root.querySelectorAll('select,input').forEach(el=>el.addEventListener('change',()=>{
   const i=+el.dataset.i,k=el.dataset.k,j=+el.dataset.j;
-  if(k==='rarity'){items[i].rarity=el.value;if(el.value==='purple')items[i].active=false;else items[i].active=true}
+  if(k==='rarity'){items[i].rarity=el.value;if(el.value!=='gold')items[i].active=false;else items[i].active=true}
   if(k==='active')items[i].active=el.value==='yes';
   if(k==='set')items[i].set=el.value;
   if(k==='cost')items[i].cost=el.value;
