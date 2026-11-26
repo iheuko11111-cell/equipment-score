@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>絵装まとめて採点 Ver.20</title>
+<title>絵装まとめて採点 Ver.21</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1018;--panel:#172131;--line:#34445b;--muted:#adbacb;--text:#f4f6fa;--blue:#a3caff;--green:#80e0b0}
 *{box-sizing:border-box}body{margin:0;padding:18px 12px 45px;background:linear-gradient(145deg,#1b293d,#090d14 65%);color:var(--text);font-family:system-ui,-apple-system,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
@@ -19,9 +19,9 @@ button{border:0;border-radius:10px;padding:12px 15px;font-size:14px;font-weight:
 .line{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.line b{font-variant-numeric:tabular-nums}.sum{display:flex;justify-content:space-between;align-items:center}.sum strong{font-size:38px;color:var(--green)}.sum small{font-size:14px;color:var(--muted)}
 pre{white-space:pre-wrap;max-height:150px;overflow:auto;background:#0d1521;padding:10px;border-radius:8px;font-size:12px}
 @media(max-width:520px){.head h1{font-size:24px}.card{padding:13px}.sum strong{font-size:32px}}
-.overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.quick{background:#101a28;border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;min-width:0}.quick img{display:block;height:105px;max-width:100%;object-fit:contain;margin:5px auto}.quick strong{font-size:28px;color:var(--green)}.quick small{color:var(--muted)}.quick a{color:inherit;text-decoration:none;display:block}.quick.excluded strong{font-size:18px;color:var(--muted)}.equip summary{cursor:pointer;padding:5px 0}.equip[open] summary{margin-bottom:12px}</style></head>
+.overview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.quick{background:#101a28;border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;min-width:0}.quick img{display:block;height:105px;max-width:100%;object-fit:contain;margin:5px auto}.quick strong{font-size:28px;color:var(--green)}.quick small{color:var(--muted)}.type-note{display:block;font-size:13px;color:var(--muted);margin-top:4px;line-height:1.5}.type-note.gain{color:var(--blue)}.quick a{color:inherit;text-decoration:none;display:block}.quick.excluded strong{font-size:18px;color:var(--muted)}.equip summary{cursor:pointer;padding:5px 0}.equip[open] summary{margin-bottom:12px}</style></head>
 <body><main>
-<header class="head"><small>OUTRANK / EQUIPMENT SCORER</small><h1>絵装まとめて採点 <span style="font-size:14px;color:#a3caff">Ver.20</span></h1><div class="muted">画像を選ぶだけで1枚表示・4枚ドロップ表示を自動判定。金色レアリティだけ採点します。</div></header>
+<header class="head"><small>OUTRANK / EQUIPMENT SCORER</small><h1>絵装まとめて採点 <span style="font-size:14px;color:#a3caff">Ver.21</span></h1><div class="muted">画像を選ぶだけで1枚表示・4枚ドロップ表示を自動判定。金色レアリティだけ採点します。</div></header>
 <section class="card">
 <h2>① スクリーンショットを選択</h2>
 <label class="picker">画像ファイルを選択<input id="file" type="file" accept="image/*"></label>
@@ -31,7 +31,7 @@ pre{white-space:pre-wrap;max-height:150px;overflow:auto;background:#0d1521;paddi
 <details><summary class="muted">OCR読み取り結果</summary><pre id="raw">まだ解析していません。</pre></details>
 </section>
 <section class="card"><h2>② 採点結果</h2><div class="field" style="margin-bottom:14px"><label for="mode">評価モード</label><select id="mode"><option value="default">デフォルト（セット一致）</option><option value="属性ダメージ">属性特化</option><option value="奥義チャージ">奥義チャージ特化</option><option value="会心率">会心率特化</option></select><div id="modeHint" class="muted" style="margin-top:6px">セット効果と一致するステータスに各1点。</div></div><div id="overview" class="overview"></div><div id="results"><p class="muted">画像を選択して解析してください。</p></div></section>
-<section class="card"><h2>判定ルール</h2><div class="muted">カード枠の色と位置で画面を判別します。未検出・基準未登録の項目は採点保留になります。各装備を10点満点で採点（ステータス8点＋一致2点）。デフォルトはセット一致、特化モードは指定効果との一致を加点します。各絵装の得点を個別に表示します。紫色レアリティは採点対象外です。古龍はコスト3・専用固定値（属性4.27%、奥義2.92%）で判別（セット名が未検出でも型を表示）し、属性型・奥義型・汎用型を表示します。</div><div class="hint">セット対応：灼炎・水御・湧雷・氷霜・破竜＝属性ダメージ／共鳴・武技＝会心率／導き・恩恵・守護＝奥義チャージ／猛力＝物理ダメージ</div></section>
+<section class="card"><h2>判定ルール</h2><div class="muted">カード枠の色と位置で画面を判別します。未検出・基準未登録の項目は採点保留になります。各装備を10点満点で採点（ステータス8点＋一致2点）。デフォルトはセット一致、特化モードは指定効果との一致を加点します。各絵装の得点を個別に表示します。デフォルトでは型と、より高得点になる特化モードの点数を併記します。紫色レアリティは採点対象外です。古龍はコスト3・専用固定値（属性4.27%、奥義2.92%）で判別（セット名が未検出でも型を表示）し、属性型・奥義型・汎用型を表示します。</div><div class="hint">セット対応：灼炎・水御・湧雷・氷霜・破竜＝属性ダメージ／共鳴・武技＝会心率／導き・恩恵・守護＝奥義チャージ／猛力＝物理ダメージ</div></section>
 </main>
 <script>
 const $=id=>document.getElementById(id);
@@ -125,12 +125,20 @@ $('run').addEventListener('click',async()=>{
 });
 $('mode').addEventListener('change',render);
 function bonusType(setInfo,mode){return mode==='default'?(setInfo?.type||''):mode;}
+function typeNote(stats,stat,defaultPoints){
+ const names={'属性ダメージ':'属性型','奥義チャージ':'奥義型','会心率':'会心型'};
+ const same=stats[0].effect===stats[1].effect;
+ const type=same?(names[stats[0].effect]||'汎用型'):'汎用型';
+ const gains=Object.entries(names).map(([effect,name])=>({name,points:stat+stats.filter(s=>s.effect===effect).length})).filter(x=>x.points>defaultPoints);
+ if(same&&gains.length)return `<span class="type-note gain">${type}(${gains[0].points}点)</span>`;
+ return `<span class="type-note">${type}</span>`+gains.map(x=>`<span class="type-note gain">${x.name}(${x.points}点)</span>`).join('');
+}
 function render(){
  const mode=$('mode').value; $('modeHint').textContent=mode==='default'?'セット効果と一致するステータスに各1点。':mode+'に各1点（セット一致は加算しない）。';
  const root=$('results'),overview=$('overview');const opened=new Set([...root.querySelectorAll('details[open]')].map(x=>x.id));root.innerHTML='';overview.innerHTML='';
  items.forEach((r,i)=>{
   const ancient=ancientType(r), suspect=fixedAncient(r.stats)||r.set==="鋼龍の嵐威"; const complete=!suspect&&!!r.set&&r.set!=="鋼龍の嵐威"&&r.stats.length===2&&r.stats.every(s=>s.effect&&s.value!==''&&Number.isFinite(Number(s.value))&&rules[r.cost+'|'+s.effect]); const setInfo=sets[r.set]||null,p=r.stats.map(s=>score(r.cost,s.effect,s.value)),stat=p.reduce((a,b)=>a+b,0),target=bonusType(setInfo,mode),setPts=target?r.stats.filter(s=>s.effect===target).length:0,points=stat+setPts;
-  const excluded=r.rarity==='purple'||(r.rarity==='gold'&&!r.active);const label=excluded?'対象外':r.rarity!=='gold'?'要確認':ancient||(!complete?'要確認':String(points));const q=document.createElement('div');q.className='quick'+(excluded?' excluded':'');q.innerHTML=`<a href="#equip-${i}"><small>装備 ${i+1} · ${r.set|| (excluded?'紫色':'未確定')}</small><img src="${r.preview}" alt="装備 ${i+1}">${!excluded&&r.rarity==='gold'&&ancient?'<small style="display:block;color:#ffe29b">古龍絵装</small>':''}<strong>${label}</strong>${!excluded&&complete&&r.rarity==='gold'?'<small> / 10点</small>':''}</a>`;q.querySelector('a').onclick=()=>{document.getElementById('equip-'+i).open=true;};overview.appendChild(q);
+  const excluded=r.rarity==='purple'||(r.rarity==='gold'&&!r.active);const label=excluded?'対象外':r.rarity!=='gold'?'要確認':ancient||(!complete?'要確認':String(points));const q=document.createElement('div');q.className='quick'+(excluded?' excluded':'');q.innerHTML=`<a href="#equip-${i}"><small>装備 ${i+1} · ${r.set|| (excluded?'紫色':'未確定')}</small><img src="${r.preview}" alt="装備 ${i+1}">${!excluded&&r.rarity==='gold'&&ancient?'<small style="display:block;color:#ffe29b">古龍絵装</small>':''}<strong>${label}</strong>${!excluded&&complete&&r.rarity==='gold'?'<small> / 10点</small>':''}${!excluded&&complete&&r.rarity==='gold'&&mode==='default'?typeNote(r.stats,stat,points):''}</a>`;q.querySelector('a').onclick=()=>{document.getElementById('equip-'+i).open=true;};overview.appendChild(q);
   const d=document.createElement('details');d.className='equip';d.id='equip-'+i;d.open=opened.has(d.id);
   d.innerHTML=`<summary>装備 ${i+1} の内訳・手動修正</summary><div class="equiphead"><b>装備 ${i+1}</b><span class="tag ${r.rarity}">${r.rarity==='gold'?'金色':r.rarity==='purple'?'紫色（対象外）':'未判定'}</span></div>
   ${r.preview?`<img src="${r.preview}" style="max-height:150px;max-width:100%;display:block;margin:0 auto 10px">`:``}<div class="grid"><div class="field"><label>レアリティ</label><select data-i="${i}" data-k="rarity"><option value="unknown" ${r.rarity==='unknown'?'selected':''}>未判定</option><option value="gold" ${r.rarity==='gold'?'selected':''}>金色</option><option value="purple" ${r.rarity==='purple'?'selected':''}>紫色</option></select></div>
